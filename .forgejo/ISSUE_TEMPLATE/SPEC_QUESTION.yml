@@ -1,0 +1,46 @@
+name: Spec Question / Ambiguity
+about: The RISC-V spec (or a reference implementation) is unclear, silent, or contradictory about something you need to implement
+title: "[SPEC] "
+labels: ["spec-question"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: The question
+      description: What specifically is unclear or unspecified.
+    validations:
+      required: true
+
+  - type: input
+    id: spec-section
+    attributes:
+      label: Relevant spec section
+      placeholder: "e.g. RISC-V Privileged Spec, sv39 section, unpriv ISA manual §2.6"
+
+  - type: textarea
+    id: references
+    attributes:
+      label: What references say
+      description: What Spike, QEMU, or other reference implementations actually do here, if you've checked. Note disagreements between references if any.
+
+  - type: textarea
+    id: interpretations
+    attributes:
+      label: Possible interpretations
+      description: The reasonable readings, if there's more than one.
+
+  - type: dropdown
+    id: blocking
+    attributes:
+      label: Is this currently blocking work?
+      options:
+        - "Yes — blocks a milestone, need to resolve to proceed"
+        - "No — can proceed with an assumption, documenting it here"
+    validations:
+      required: true
+
+  - type: textarea
+    id: assumption
+    attributes:
+      label: Assumption made (if proceeding anyway)
+      description: State it explicitly so it's revisitable later if wrong.

@@ -1,0 +1,52 @@
+name: Performance Regression
+about: Something got slower and shouldn't have
+title: "[PERF] "
+labels: ["performance", "regression"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This template is for regressions (a real baseline existed and got
+        worse). If you're proposing a *new* speedup rather than reporting
+        a regression, this is really an [OPTIMIZATION] question - file a
+        Feature issue and log it in docs/experiments/ instead.
+
+  - type: input
+    id: baseline
+    attributes:
+      label: Baseline (commit/tag where it was fast)
+    validations:
+      required: true
+
+  - type: input
+    id: regressed
+    attributes:
+      label: Regressed at (commit/tag/PR where it got slow)
+    validations:
+      required: true
+
+  - type: textarea
+    id: metric
+    attributes:
+      label: Metric and numbers
+      description: What was measured, how, and the before/after values.
+      placeholder: |
+        Metric: CoreMark iterations/sec
+        Before: 
+        After: 
+        Method: 
+    validations:
+      required: true
+
+  - type: textarea
+    id: suspect
+    attributes:
+      label: Suspected cause (if known)
+      description: A specific commit/PR, or "unknown — needs bisecting."
+
+  - type: markdown
+    attributes:
+      value: |
+        Once root-caused, this should get logged as an [OPTIMIZATION]
+        entry in docs/experiments/ (baseline = the regressed state,
+        variant = the fix) before the fix PR lands.

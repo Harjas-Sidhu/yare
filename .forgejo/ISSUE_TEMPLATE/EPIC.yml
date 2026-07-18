@@ -1,0 +1,39 @@
+name: Epic
+about: A large tracking issue spanning multiple milestones — not a work item itself
+title: "[EPIC] "
+labels: ["epic"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        An epic is a tracking issue, not a milestone — it stays a plain
+        issue with a checklist linking to the milestones underneath it.
+        Tick each line by hand once that milestone hits 100%.
+
+  - type: textarea
+    id: definition-of-done
+    attributes:
+      label: Definition of done
+      description: The end state this epic is aiming at, as a checklist.
+      placeholder: |
+        - [ ]
+        - [ ]
+    validations:
+      required: true
+
+  - type: textarea
+    id: milestones
+    attributes:
+      label: Milestones
+      description: One line per milestone. Link to the milestone once it's created; tick manually when it closes.
+      placeholder: |
+        - [ ] M1: 
+        - [ ] M2: 
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Anything worth flagging up front — scope boundaries, explicitly optional pieces, known unknowns.

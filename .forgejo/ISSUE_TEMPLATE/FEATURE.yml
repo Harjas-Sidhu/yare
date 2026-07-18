@@ -1,0 +1,58 @@
+name: Feature
+about: New capability - a component, extension, or device that doesn't exist yet
+title: "[FEAT] "
+labels: ["feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing: does this belong under an existing milestone? If the
+        target milestone doesn't exist yet, either it belongs in a later
+        epic or the milestone list needs updating first - don't file
+        speculative work with no milestone home.
+
+  - type: input
+    id: milestone
+    attributes:
+      label: Milestone
+      description: Which milestone does this belong to? (assign the issue to it too)
+      placeholder: "e.g. M1 — Core RV64GC ISA + dispatch"
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What is being added
+      description: The capability, in one or two sentences. Not the implementation - the outcome.
+    validations:
+      required: true
+
+  - type: textarea
+    id: dod
+    attributes:
+      label: Definition of done
+      description: How you'll know this is actually finished? (Concrete, Verifiable only)
+      placeholder: |
+        - [ ]
+        - [ ]
+    validations:
+      required: true
+
+  - type: dropdown
+    id: needs-design-experiment
+    attributes:
+      label: Does this need a [DESIGN] experiment first
+      description: If there's no existing correct baseline to build against and more than one reasonable approach, log it in docs/experiments/ before writing code.
+      options:
+        - "No — approach is obvious/already decided"
+        - "Yes — see linked experiment"
+        - "Not sure yet"
+    validations:
+      required: true
+
+  - type: input
+    id: experiment-link
+    attributes:
+      label: Linked experiment (if any)
+      placeholder: docs/experiments/experiment-log.md#qN

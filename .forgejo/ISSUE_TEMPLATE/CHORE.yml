@@ -1,0 +1,37 @@
+name: Chore
+about: CI, tooling, build system, dependency bumps, repo maintenance - work with no behavioral change to the interpreter
+title: "[CHORE] "
+labels: ["chore"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What needs doing
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - CI/build
+        - Dependency/toolchain
+        - Repo structure/docs
+        - Test infra (fuzzing, differential testing, benchmarks wiring)
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: milestone
+    attributes:
+      label: Milestone (if this is gated on one, e.g. test infra tied to a device landing)
+      placeholder: "e.g. M6 — leave blank if not milestone-gated"
+
+  - type: markdown
+    attributes:
+      value: |
+        No behavioral/correctness/perf claims belong here - if this chore
+        is actually enabling a perf comparison, the comparison itself is
+        an [OPTIMIZATION] experiment, not part of this issue.

@@ -1,0 +1,52 @@
+name: Bug Report
+about: Something that should be correct per the spec/tests is not
+title: "[BUG] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What's wrong
+      description: What you expected vs what actually happened.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal repro
+      description: Smallest instruction sequence / test case / trace that triggers it. If it's a compliance-suite failure, name the specific test.
+      placeholder: |
+        Test: rv64ui-p-addi
+        or:
+        Instruction sequence: ...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - "Blocks a milestone's compliance/correctness gate"
+        - "Wrong behavior, but doesn't block a current milestone"
+        - "Edge case / spec ambiguity - see also Spec Question template"
+    validations:
+      required: true
+
+  - type: input
+    id: milestone
+    attributes:
+      label: Milestone this blocks (if any)
+      placeholder: "e.g. M1 - Core RV64GC ISA + dispatch"
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior (per spec/reference)
+      description: Cite the RISC-V spec section, or the Spike/QEMU reference behavior, if known.
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
