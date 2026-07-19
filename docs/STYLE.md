@@ -1,7 +1,8 @@
 # STYLE
 
-This is the style guide and specification to be followed.
-Inspired by [TigerStyle](./TIGER_STYLE.md), by [TigerBeetle](https://tigerbeetle.com/).
+This project's coding style is heavily based on TigerStyle by [TigerBeetle](https://tigerbeetle.com/).
+A copy of their original guidelines can be found in [TIGER_STYLE.md](./TIGER_STYLE.md), which is
+distributed under the [Apache License 2.0](../LICENSE-APACHE).
 
 # First Priniciples
 Correctness, Performance and Developer Experience - in that order.
