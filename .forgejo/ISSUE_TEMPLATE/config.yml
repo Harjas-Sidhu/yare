@@ -2,4 +2,4 @@ blank_issues_enabled: false
 contact_links:
   - name: Experiment log
     url: https://codeberg.org/Harjas/YARE/src/branch/main/docs/experiments/experiment-log.md
-    about: DESIGN/OPTIMIZATION experiments live here, not in issues - link to the relevant entry from your issue instead of duplicating it.
+    about: DESIGN/OPTIMIZATION/DECISION experiments live here, not in issues - link to the relevant entry from your issue instead of duplicating it.

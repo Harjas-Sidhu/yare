@@ -6,8 +6,8 @@ their own file, appended to this index — don't retrofit them into old ones.
 
 Workload target: general desktop-ish (Linux kernel, Doom), RV64GC.
 
-Each question is one of two types — the type determines what counts as a
-valid result. See `_template.md` for the full rules on each.
+Each question is one of three types — the type determines what counts as a
+valid result. See `_template.md`(or `_template_decision.md`) for the full rules on each.
 
 - **[DESIGN]** — no correct baseline exists yet. Comparing candidates to
   choose the first real implementation. Correctness checked for every
@@ -15,9 +15,12 @@ valid result. See `_template.md` for the full rules on each.
 - **[OPTIMIZATION]** — a correct baseline exists. Testing whether a change
   makes it faster without breaking it. Correctness gated before any perf
   number is recorded.
+- **[DECISION]** — no correct baseline exists yet. To be used when reasoning
+  about choices and trade-offs without real meeasurable properties.
 
-New question → copy `_template.md` to `qN-short-slug.md`, fill in Why/
-Hypothesis/What's varied *before* running anything, add a row below.
+New question → copy `_template.md`(or `_template_decision.md`) to 
+`qN-short-slug.md`, fill in Why/Hypothesis/What's varied *before* 
+running anything, add a row below.
 
 ---
 

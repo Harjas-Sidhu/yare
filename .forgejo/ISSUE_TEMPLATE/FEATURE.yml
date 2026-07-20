@@ -42,7 +42,7 @@ body:
   - type: dropdown
     id: needs-design-experiment
     attributes:
-      label: Does this need a [DESIGN] experiment first
+      label: Does this need a [DESIGN] / [DECISION] experiment first
       description: If there's no existing correct baseline to build against and more than one reasonable approach, log it in docs/experiments/ before writing code.
       options:
         - "No — approach is obvious/already decided"
