@@ -10,7 +10,7 @@ Describe what was actually done in the code.
 - What is worth paying more attention to during the review?
 
 ## Experiment Logs
-Add any experiment log - design/optimization/etc - if needed. Add the link here and make sure it is commited
+Add any experiment log - design/optimization/etc - if needed. Add the link here and make sure it is committed
 to the repo in `docs/experiments`. If no experiment linked, delete this section.
 
 ## Testing & Verification

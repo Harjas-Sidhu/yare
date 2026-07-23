@@ -37,4 +37,4 @@ Newest first. One-line verdict only — full reasoning lives in the file.
 
 | # | Type | Question | Verdict | File |
 |---|------|----------|---------|------|
-| 1 | [DECISION] | Should we use `minisign` for bootstrapping scripts? | Don't use `minisign`, add hardcoded hashes | [q1-bootstraping-scripts.md](./q1-bootstraping-scripts.md) |
+| 1 | [DECISION] | Should we use `minisign` for bootstrapping scripts? | Don't use `minisign`, add hardcoded hashes | [q1-bootstrapping-scripts.md](./q1-bootstrapping-scripts.md) |

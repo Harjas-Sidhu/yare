@@ -4,7 +4,7 @@ This project's coding style is heavily based on TigerStyle by [TigerBeetle](http
 A copy of their original guidelines can be found in [TIGER_STYLE.md](./TIGER_STYLE.md), which is
 distributed under the [Apache License 2.0](../LICENSE-APACHE).
 
-# First Priniciples
+# First Principles
 Correctness, Performance and Developer Experience - in that order.
 
 # Simplicity and Elegance
@@ -12,13 +12,13 @@ Correctness, Performance and Developer Experience - in that order.
 > Edsger Dijkstra
 
 Design things proactively.
-Think and iterate over design. Design is cheap, Implementation is expensive - upfront and maintainence.
+Think and iterate over design. Design is cheap, Implementation is expensive - upfront and maintenance.
 
 But there is a caveat - you can't design without knowledge.
 How can you design correctly if you don't know the problem **AND** the solution?
 
-It is like asking a person to solve a math problem - an experinced mathematician will find 
-simple and elgant formulas to model the problem and solutions. While an untrained person, even when 
+It is like asking a person to solve a math problem - an experienced mathematician will find 
+simple and elegant formulas to model the problem and solutions. While an untrained person, even when 
 learning and trying the best, will find it much, much harder to move in the right direction from 
 the get-go.
 
@@ -34,13 +34,13 @@ So, it is totally heuristic on what the correct prototype looks like. I don't kn
 those are.
 
 I am including [`docs/experiment`](./experiments/experiment-log.md) to have these test, these experiments for design,
-to be present with the code. A way to eat my own dogfood. I am live testing my appraoch of:
+to be present with the code. A way to eat my own dogfood. I am live testing my approach of:
 - Try
 - Test
 - Validate
 - Iterate
 
-to see if the methodolgy itself applies recursively, and wether it indeed is an elegant solution.
+to see if the methodology itself applies recursively, and whether it indeed is an elegant solution.
 
 > “the simple and elegant systems tend to be easier and faster to design and get right, more
 > efficient in execution, and much more reliable” — Edsger Dijkstra
@@ -208,10 +208,10 @@ Beyond these rules:
   catastrophic bugs in case the library ever changes its defaults.
 
 - **Integarate Compliance Tests as early as possible**. These tests give you a valid target to test
-  against other than your own test-suite. In projects like emulators and compliers, these big, *torture*
+  against other than your own test-suite. In projects like emulators and compilers, these big, *torture*
   test-suites can help even more than fuzzing in many cases.
 
-- **Golden reference is *Golden*(if available)**. If you have an already exisiting implementation,
+- **Golden reference is *Golden*(if available)**. If you have an already existing implementation,
   use that as a target to test against. The earlier it is introduced in the process, the earlier
   you can say more about your implementation. Eg: QEMU/SPIKE are the golden references for RISC-V
   emulators. But be cautious, Inheriting behaviour should not be blind, but filtered. The metric
@@ -430,7 +430,7 @@ Beyond these rules:
 - Use newlines to **group resource allocation and deallocation**, i.e. before the resource
   allocation and after the corresponding `defer` statement, to make leaks easier to spot.
 
-- Have a **Seperation between Host Errors and Guest Errors**. Different Error sets, So the confusion
+- Have a **Separation between Host Errors and Guest Errors**. Different Error sets, So the confusion
   over the ownership of error never arise.
 
 ### Off-By-One Errors
@@ -465,7 +465,7 @@ Beyond these rules:
   depth against "goto fail;" bugs.
 
 ### Dependencies
-Dependencies have cost. Minimize them. But sometimes, the value of a dependecy may be larger than
+Dependencies have cost. Minimize them. But sometimes, the value of a dependency may be larger than
 it costs. Concretely - SoftFloat Libraries.
 
 SoftFloat Libraries are a whole project of correctness and performance on their own. So you
