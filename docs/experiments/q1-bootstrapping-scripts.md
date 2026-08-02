@@ -5,41 +5,44 @@
 **Date closed:** 2026-07-20
 
 ## Why this question
-The `minisign` is the format used by zig compiler, which we can resolve
-dynamically based on each `URL` rather than pinning the hashes, but it
-introduces a dependency that is unlikely to be present on the user's
-machine, unlike other dependencies used in the scripts.
+Zig distributes release artifacts with minisign signatures, allowing download
+integrity to be verified without pinning artifact hashes. However, verifying
+these signatures requires the `minisign binary`,
+which is unlikely to be installed on a typical developer's machine.
 
-So we need to evaluate whether it is better to use `minisign` at the cost
-of added friction(user) for dynamic resolution or pin the version of zig compiler
-by hardcoding hashes?
+This [DECISION] evaluates whether the bootstrap scripts should depend on `minisign`
+for dynamic verification or instead pin the expected `SHA-256` hashes of supported Zig releases.
 
 ## Options considered
-| Option | Description |
-|---|---|
-| A | Using `minisign` |
-| B | Using pinned, hardcoded `sha-256` hashes |
+| Option | Description                                  |
+| ------ | -------------------------------------------- |
+| A      | Verify downloads using `minisign` signatures |
+| B      | Verify downloads using pinned SHA-256 hashes |
+
 
 ## Tradeoffs
-| Criteria | Minisign | Hashes |
-|---|---|---|
-| Cost | Added friction for user to install `minisign` | Higher maintenance cost due to hardcoded hashes |
-| Maintenance (Dev) | Low - Dynamic Resolution | High - Hardcoded Hashes, manual update required |
-| Friction (User) | High - install an unlikely dependency | Less - uses only commonly available dependencies |
+| Criteria        | Minisign                             | Pinned hashes                          |
+| --------------- | ------------------------------------ | -------------------------------------- |
+| User experience | Requires installing `minisign`       | No extra dependency                    |
+| Maintenance     | Low; signatures resolve dynamically  | Manual hash updates                    |
+| Security        | Uses upstream signature verification | Relies on repository-maintained hashes |
+| Version control | Easier to support arbitrary versions | Intentional version pinning            |
+
 
 ## Decision
-The Hardcoding hashes approach is better for our use-case, as the added
-maintenance cost act as gatekeeping for version bumping the zig version
-for more cautious approach - as there are breaking changes between versions.
+Pinned SHA-256 hashes are chosen.
 
-Also, the core spirit of the bootstrapping script is an easy, friction-less,
-way to use the project. Such that, the experience feels like an "out-of-box"
-experience. Adding a dependency that the user most likely has to install
-themselves goes against the core of the spirit.
+Although this introduces additional maintenance whenever the Zig version changes,
+that maintenance is intentional rather than a drawback. The project targets specific
+Zig versions, and updating those versions should be an explicit, reviewed change
+rather than something that occurs implicitly.
 
-With the above reasons, the 2nd approach - Hardcoding Hashes approach is chosen.
-For the process to follow in case of version bump, follow the "NB" comment
-provided in the script.
+Requiring users to install minisign would make the first experience with the project more cumbersome. 
+The primary goal of the bootstrap scripts is to provide an out-of-the-box setup experience with
+minimal prerequisites. Avoiding uncommon dependencies better aligns with that goal.
+
+Version updates should therefore be performed by updating the pinned hashes according
+to the process documented in the script.
 
 ## Follow-up questions raised
 None
