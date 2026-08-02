@@ -126,6 +126,129 @@ pub inline fn simm_J(self: Self) i64 {
     return sign_extend(self.imm_J());
 }
 
+// funct7 | rs2 | rs1 | funct3 | rd | opcode
+pub const RFields = packed struct(u32) {
+    opcode: u7,
+    rd: u5,
+    funct3: u3,
+    rs1: u5,
+    rs2: u5,
+    funct7: u7,
+};
+
+// imm[11:0] | rs1 | funct3 | rd | opcode
+pub const IFields = packed struct(u32) {
+    opcode: u7,
+    rd: u5,
+    funct3: u3,
+    rs1: u5,
+    imm_11_00: u12,
+
+    pub fn get_imm(self: *const @This()) u12 {
+        return self.imm_11_00;
+    }
+
+    pub fn set_imm(self: *@This(), imm: u12) void {
+        self.imm_11_00 = imm;
+    }
+};
+
+// imm[11:5] | rs2 | rs1 | funct3 | imm[4:0] | opcode
+pub const SFields = packed struct(u32) {
+    opcode: u7,
+    imm_04_00: u5,
+    funct3: u3,
+    rs1: u5,
+    rs2: u5,
+    imm_11_05: u7,
+
+    pub fn get_imm(self: *const @This()) u12 {
+        return @as(u12, self.imm_11_05) << 5 |
+            @as(u12, self.imm_04_00);
+    }
+
+    pub fn set_imm(self: *@This(), imm: u12) void {
+        self.imm_04_00 = @truncate(imm);
+        self.imm_11_05 = @truncate(imm >> 5);
+    }
+};
+
+// imm[12:12] | imm[10:5] | rs2 | rs1 | funct3 | imm[4:1] | imm[11:11] | opcode
+pub const BFields = packed struct(u32) {
+    opcode: u7,
+    imm_11_11: u1,
+    imm_04_01: u4,
+    funct3: u3,
+    rs1: u5,
+    rs2: u5,
+    imm_10_05: u6,
+    imm_12_12: u1,
+
+    pub fn get_imm(self: *const @This()) u13 {
+        return @as(u13, self.imm_12_12) << 12 |
+            @as(u13, self.imm_11_11) << 11 |
+            @as(u13, self.imm_10_05) << 5 |
+            @as(u13, self.imm_04_01) << 1;
+    }
+
+    pub fn set_imm(self: *@This(), imm: u13) void {
+        self.imm_04_01 = @truncate(imm >> 1);
+        self.imm_10_05 = @truncate(imm >> 5);
+        self.imm_11_11 = @truncate(imm >> 11);
+        self.imm_12_12 = @truncate(imm >> 12);
+    }
+};
+
+// imm[31:12] |  rd | opcode
+pub const UFields = packed struct(u32) {
+    opcode: u7,
+    rd: u5,
+    imm_31_12: u20,
+
+    pub fn get_imm(self: *const @This()) u32 {
+        return @as(u32, self.imm_31_12) << 12;
+    }
+
+    pub fn set_imm(self: *@This(), imm: u32) void {
+        self.imm_31_12 = @truncate(imm >> 12);
+    }
+};
+
+// imm[20:20] | imm[10:1] | imm[11:11] | imm[19:12] |  rd | opcode
+pub const JFields = packed struct(u32) {
+    opcode: u7,
+    rd: u5,
+    imm_19_12: u8,
+    imm_11_11: u1,
+    imm_10_01: u10,
+    imm_20_20: u1,
+
+    pub fn get_imm(self: *const @This()) u21 {
+        return
+            @as(u21, self.imm_20_20) << 20 |
+            @as(u21, self.imm_19_12) << 12 |
+            @as(u21, self.imm_11_11) << 11 |
+            @as(u21, self.imm_10_01) << 1;
+    }
+
+    pub fn set_imm(self: *@This(), imm: u21) void {
+        self.imm_10_01 = @truncate(imm >> 1);
+        self.imm_11_11 = @truncate(imm >> 11);
+        self.imm_19_12 = @truncate(imm >> 12);
+        self.imm_20_20 = @truncate(imm >> 20);
+    }
+};
+
+// funct6 | shamt | rs1 | funct3 | rd | opcode
+pub const ShiftIFields = packed struct(u32) {
+    opcode: u7,
+    rd: u5,
+    funct3: u3,
+    rs1: u5,
+    shamt: u6,
+    funct6: u6,
+};
+
 // Log2Int(T) is the smallest legal type, allows safet shifts.
 fn highest_bit_index(comptime T: type) std.math.Log2Int(T) {
     return @typeInfo(T).int.bits - 1;
@@ -140,16 +263,6 @@ fn generate_common(comptime T: type) [6]T {
 fn get_raw(fields: anytype) u32 {
     return @bitCast(fields);
 }
-
-// funct7 | rs2 | rs1 | funct3 | rd | opcode
-const RFields = packed struct(u32) {
-    opcode: u7,
-    rd: u5,
-    funct3: u3,
-    rs1: u5,
-    rs2: u5,
-    funct7: u7,
-};
 
 test "Instruction: 0, 1, max, max - 1, mid and boundary values for R-type" {
     const _u7 = generate_common(u7);
@@ -253,23 +366,6 @@ test "Instruction: randomized R-types fields" {
         try expectEqual(fields.funct7, decoded.funct7());
     }
 }
-
-// imm[11:0] | rs1 | funct3 | rd | opcode
-const IFields = packed struct(u32) {
-    opcode: u7,
-    rd: u5,
-    funct3: u3,
-    rs1: u5,
-    imm_11_00: u12,
-
-    pub fn get_imm(self: *const @This()) u12 {
-        return self.imm_11_00;
-    }
-
-    pub fn set_imm(self: *@This(), imm: u12) void {
-        self.imm_11_00 = imm;
-    }
-};
 
 test "Instruction: 0, 1, max, max - 1, mid and boundary values for I-type" {
     const _u7 = generate_common(u7);
@@ -379,26 +475,6 @@ test "Instruction: randomized I-types fields" {
     }
 }
 
-// imm[11:5] | rs2 | rs1 | funct3 | imm[4:0] | opcode
-const SFields = packed struct(u32) {
-    opcode: u7,
-    imm_04_00: u5,
-    funct3: u3,
-    rs1: u5,
-    rs2: u5,
-    imm_11_05: u7,
-
-    pub fn get_imm(self: *const @This()) u12 {
-        return @as(u12, self.imm_11_05) << 5 |
-            @as(u12, self.imm_04_00);
-    }
-
-    pub fn set_imm(self: *@This(), imm: u12) void {
-        self.imm_04_00 = @truncate(imm);
-        self.imm_11_05 = @truncate(imm >> 5);
-    }
-};
-
 test "Instruction: 0, 1, max, max - 1, mid and boundary values for S-type" {
     const _u7 = generate_common(u7);
     const _u5 = generate_common(u5);
@@ -507,32 +583,6 @@ test "Instruction: randomized S-types fields" {
         try expectEqual(@as(i64, signed_imm), decoded.simm_S());
     }
 }
-
-// imm[12:12] | imm[10:5] | rs2 | rs1 | funct3 | imm[4:1] | imm[11:11] | opcode
-const BFields = packed struct(u32) {
-    opcode: u7,
-    imm_11_11: u1,
-    imm_04_01: u4,
-    funct3: u3,
-    rs1: u5,
-    rs2: u5,
-    imm_10_05: u6,
-    imm_12_12: u1,
-
-    pub fn get_imm(self: *const @This()) u13 {
-        return @as(u13, self.imm_12_12) << 12 |
-            @as(u13, self.imm_11_11) << 11 |
-            @as(u13, self.imm_10_05) << 5 |
-            @as(u13, self.imm_04_01) << 1;
-    }
-
-    pub fn set_imm(self: *@This(), imm: u13) void {
-        self.imm_04_01 = @truncate(imm >> 1);
-        self.imm_10_05 = @truncate(imm >> 5);
-        self.imm_11_11 = @truncate(imm >> 11);
-        self.imm_12_12 = @truncate(imm >> 12);
-    }
-};
 
 test "Instruction: 0, 1, max, max - 1, mid and boundary values for B-type" {
     const _u7 = generate_common(u7);
@@ -662,21 +712,6 @@ test "Instruction: randomized B-types fields" {
     }
 }
 
-// imm[31:12] |  rd | opcode
-const UFields = packed struct(u32) {
-    opcode: u7,
-    rd: u5,
-    imm_31_12: u20,
-
-    pub fn get_imm(self: *const @This()) u32 {
-        return @as(u32, self.imm_31_12) << 12;
-    }
-
-    pub fn set_imm(self: *@This(), imm: u32) void {
-        self.imm_31_12 = @truncate(imm >> 12);
-    }
-};
-
 test "Instruction: 0, 1, max, max - 1, mid and boundary values for U-type" {
     const _u7 = generate_common(u7);
     const _u5 = generate_common(u5);
@@ -778,31 +813,6 @@ test "Instruction: randomized U-types fields" {
         try expectEqual(@as(i64, signed_imm), decoded.simm_U());
     }
 }
-
-// imm[20:20] | imm[10:1] | imm[11:11] | imm[19:12] |  rd | opcode
-const JFields = packed struct(u32) {
-    opcode: u7,
-    rd: u5,
-    imm_19_12: u8,
-    imm_11_11: u1,
-    imm_10_01: u10,
-    imm_20_20: u1,
-
-    pub fn get_imm(self: *const @This()) u21 {
-        return
-            @as(u21, self.imm_20_20) << 20 |
-            @as(u21, self.imm_19_12) << 12 |
-            @as(u21, self.imm_11_11) << 11 |
-            @as(u21, self.imm_10_01) << 1;
-    }
-
-    pub fn set_imm(self: *@This(), imm: u21) void {
-        self.imm_10_01 = @truncate(imm >> 1);
-        self.imm_11_11 = @truncate(imm >> 11);
-        self.imm_19_12 = @truncate(imm >> 12);
-        self.imm_20_20 = @truncate(imm >> 20);
-    }
-};
 
 test "Instruction: 0, 1, max, max - 1, mid and boundary values for J-type" {
     const _u7 = generate_common(u7);
@@ -917,16 +927,6 @@ test "Instruction: randomized J-types fields" {
         try expectEqual(@as(i64, signed_imm), decoded.simm_J());
     }
 }
-
-// funct6 | shamt | rs1 | funct3 | rd | opcode
-const ShiftIFields = packed struct(u32) {
-    opcode: u7,
-    rd: u5,
-    funct3: u3,
-    rs1: u5,
-    shamt: u6,
-    funct6: u6,
-};
 
 test "Instruction: 0, 1, max, max - 1, mid and boundary values for shamt (RV64I shift-imm)" {
     const _u7 = generate_common(u7);
