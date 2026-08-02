@@ -37,4 +37,5 @@ Newest first. One-line verdict only — full reasoning lives in the file.
 
 | # | Type | Question | Verdict | File |
 |---|------|----------|---------|------|
-| 1 | [DECISION] | Should we use `minisign` for bootstrapping scripts? | Don't use `minisign`, add hardcoded hashes | [q1-bootstrapping-scripts.md](./q1-bootstrapping-scripts.md) |
+| 2 | [DECISION] | Should we use similar API to instruction for compressed instructions? | Decompress compressed instructions into canonical 32-bit instructions | [q2-compressed-instructions.md](./q2-compressed-instructions.md) |
+| 1 | [DECISION] | Should we use `minisign` for bootstrapping scripts? | Use pinned SHA-256 hashes instead of `minisign` | [q1-bootstrapping-scripts.md](./q1-bootstrapping-scripts.md) |
