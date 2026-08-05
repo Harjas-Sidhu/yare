@@ -224,8 +224,7 @@ pub const JFields = packed struct(u32) {
     imm_20_20: u1,
 
     pub fn get_imm(self: *const @This()) u21 {
-        return
-            @as(u21, self.imm_20_20) << 20 |
+        return @as(u21, self.imm_20_20) << 20 |
             @as(u21, self.imm_19_12) << 12 |
             @as(u21, self.imm_11_11) << 11 |
             @as(u21, self.imm_10_01) << 1;
@@ -878,7 +877,6 @@ test "Instruction: real J-type examples" {
         @bitCast(@as(u32, 0x7FFFF96F)), // jal x18, 1048574
         @bitCast(@as(u32, 0x800009EF)), // jal x19, -1048576
     };
-
 
     // one manual test for first instruction
     const raw_manual: u32 = get_raw(instructions[0]);
