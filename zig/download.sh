@@ -197,7 +197,7 @@ download_with_fallback() {
             rm -f -- "$download_with_fallback_path" 2>/dev/null || true
         fi
     done <<EOF
-        $download_with_fallback_all
+$download_with_fallback_all
 EOF
 
     return 1
