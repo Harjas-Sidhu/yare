@@ -37,5 +37,6 @@ Newest first. One-line verdict only — full reasoning lives in the file.
 
 | # | Type | Question | Verdict | File |
 |---|------|----------|---------|------|
+| 3 | [OPTIMIZATION] | Does mutable `var imm: uN` accumulation cause stack traffic? | Yes — collapse into a single `const` chained-OR expression; removes the stack store with no SLP-vectorization side effect, unlike widening to `u32` | [q3-var-imm-stack-traffic.md](./q3-var-imm-stack-traffic.md) |
 | 2 | [DECISION] | Should we use similar API to instruction for compressed instructions? | Decompress compressed instructions into canonical 32-bit instructions | [q2-compressed-instructions.md](./q2-compressed-instructions.md) |
 | 1 | [DECISION] | Should we use `minisign` for bootstrapping scripts? | Use pinned SHA-256 hashes instead of `minisign` | [q1-bootstrapping-scripts.md](./q1-bootstrapping-scripts.md) |
