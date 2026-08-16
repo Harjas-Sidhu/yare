@@ -60,10 +60,9 @@ pub inline fn imm_S(self: Self) u12 {
     const imm_04_00: u5 = @truncate(self.raw >> 7);
     const imm_11_05: u7 = @truncate(self.raw >> 25);
 
-    var imm: u12 = 0;
-
-    imm |= @as(u12, imm_11_05) << 5;
-    imm |= @as(u12, imm_04_00);
+    const imm: u12 =
+        @as(u12, imm_11_05) << 5 |
+        @as(u12, imm_04_00);
 
     return imm;
 }
@@ -79,12 +78,11 @@ pub inline fn imm_B(self: Self) u13 {
     const imm_10_05: u6 = @truncate(self.raw >> 25);
     const imm_12_12: u1 = @truncate(self.raw >> 31);
 
-    var imm: u13 = 0;
-
-    imm |= @as(u13, imm_12_12) << 12;
-    imm |= @as(u13, imm_11_11) << 11;
-    imm |= @as(u13, imm_10_05) << 5;
-    imm |= @as(u13, imm_04_01) << 1;
+    const imm: u13 =
+        @as(u13, imm_12_12) << 12 |
+        @as(u13, imm_11_11) << 11 |
+        @as(u13, imm_10_05) << 5 |
+        @as(u13, imm_04_01) << 1;
 
     return imm;
 }
@@ -112,12 +110,11 @@ pub inline fn imm_J(self: Self) u21 {
     const imm_10_01: u10 = @truncate(self.raw >> 21);
     const imm_20_20: u1 = @truncate(self.raw >> 31);
 
-    var imm: u21 = 0;
-
-    imm |= @as(u21, imm_20_20) << 20;
-    imm |= @as(u21, imm_19_12) << 12;
-    imm |= @as(u21, imm_11_11) << 11;
-    imm |= @as(u21, imm_10_01) << 1;
+    const imm: u21 =
+        @as(u21, imm_20_20) << 20 |
+        @as(u21, imm_19_12) << 12 |
+        @as(u21, imm_11_11) << 11 |
+        @as(u21, imm_10_01) << 1;
 
     return imm;
 }
