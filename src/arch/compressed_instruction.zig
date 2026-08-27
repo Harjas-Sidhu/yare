@@ -1079,6 +1079,7 @@ inline fn decompress_sdsp(compressed_instruction: u16) u32 {
     return @bitCast(instruction);
 }
 
+const compressed_table = @import("compressed_table.zig").table;
 const expectEqual = std.testing.expectEqual;
 
 const DecompressionCase = struct {
@@ -1624,5 +1625,17 @@ test "Decompress: hand-picked HINT encodings" {
 
     for (hint_cases) |case| {
         try case.expect_equal();
+    }
+}
+
+test "Decompress: Exhaustive table-testing" {
+    for (compressed_table, 0..) |table_entry, index| {
+        const compressed_instruction: u16 = @truncate(index);
+        const full_instruction: u32 = @truncate(table_entry);
+
+        const quadrant: u2 = @truncate(compressed_instruction);
+        if (quadrant == UNCOMPRESSED_QUADRANT) continue;
+
+        try expectEqual(full_instruction, decompress(compressed_instruction));
     }
 }
