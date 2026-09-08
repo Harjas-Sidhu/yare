@@ -4,6 +4,9 @@ const expectEqual = std.testing.expectEqual;
 
 const sign_extend = @import("sign_extend.zig").sign_extend;
 
+// 0 is illegal in both full and compressed instruction format.
+pub const ILLEGAL_INSTRUCTION: u32 = 0;
+
 raw: u32,
 
 const Self = @This();

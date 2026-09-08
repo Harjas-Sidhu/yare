@@ -1,14 +1,15 @@
 const std = @import("std");
 const Instruction = @import("instruction.zig");
+const encodings = @import("encodings.zig");
 const sign_extend = @import("sign_extend.zig").sign_extend;
 const assert = std.debug.assert;
 
+const Opcode = encodings.Opcode;
+
+const ILLEGAL_INSTRUCTION = Instruction.ILLEGAL_INSTRUCTION;
+
 // RV64C + D
 pub const UNCOMPRESSED_QUADRANT: u2 = 0b11;
-
-// HINTs are expanded to HINTs
-// 0 is illegal in both full and compressed instruction format.
-const ILLEGAL_INSTRUCTION: u32 = 0;
 
 const CDispatchKey = enum(u5) {
     // quadrant 0
@@ -54,6 +55,7 @@ inline fn create_dispatch_key(funct3: u3, quadrant: u2) CDispatchKey {
     return @enumFromInt(dispatch_key);
 }
 
+// HINTs are expanded to HINTs
 pub fn decompress(compressed_instruction: u16) u32 {
     const quadrant: u2 = @truncate(compressed_instruction);
     const funct3: u3 = @truncate(compressed_instruction >> 13);
@@ -120,7 +122,7 @@ inline fn decompress_addi4spn(compressed_instruction: u16) u32 {
     if (uimm == 0) return ILLEGAL_INSTRUCTION;
 
     var instruction: Instruction.IFields = .{
-        .opcode = 0x13,
+        .opcode = Opcode.raw(.op_imm),
         .rd = rd,
         .funct3 = 0x0,
         .rs1 = 0x2,
@@ -144,7 +146,7 @@ inline fn decompress_fld(compressed_instruction: u16) u32 {
     const rs1 = decompress_register(@truncate(compressed_instruction >> 7));
 
     var instruction: Instruction.IFields = .{
-        .opcode = 0x07,
+        .opcode = Opcode.raw(.load_fp),
         .rd = rd,
         .funct3 = 0x3,
         .rs1 = rs1,
@@ -175,7 +177,7 @@ inline fn decompress_lw(compressed_instruction: u16) u32 {
     const rs1 = decompress_register(@truncate(compressed_instruction >> 7));
 
     var instruction: Instruction.IFields = .{
-        .opcode = 0x3,
+        .opcode = Opcode.raw(.load),
         .rd = rd,
         .funct3 = 0x2,
         .rs1 = rs1,
@@ -208,7 +210,7 @@ inline fn decompress_ld(compressed_instruction: u16) u32 {
     const rs1 = decompress_register(@truncate(compressed_instruction >> 7));
 
     var instruction: Instruction.IFields = .{
-        .opcode = 0x3,
+        .opcode = Opcode.raw(.load),
         .rd = rd,
         .funct3 = 0x3,
         .rs1 = rs1,
@@ -239,7 +241,7 @@ inline fn decompress_fsd(compressed_instruction: u16) u32 {
     const rs2 = decompress_register(@truncate(compressed_instruction >> 2));
 
     var instruction: Instruction.SFields = .{
-        .opcode = 0x27,
+        .opcode = Opcode.raw(.store_fp),
         .imm_04_00 = 0x0,
         .funct3 = 0x3,
         .rs1 = rs1,
@@ -271,7 +273,7 @@ inline fn decompress_sw(compressed_instruction: u16) u32 {
     const rs2 = decompress_register(@truncate(compressed_instruction >> 2));
 
     var instruction: Instruction.SFields = .{
-        .opcode = 0x23,
+        .opcode = Opcode.raw(.store),
         .imm_04_00 = 0x0,
         .funct3 = 0x2,
         .rs1 = rs1,
@@ -305,7 +307,7 @@ inline fn decompress_sd(compressed_instruction: u16) u32 {
     const rs2 = decompress_register(@truncate(compressed_instruction >> 2));
 
     var instruction: Instruction.SFields = .{
-        .opcode = 0x23,
+        .opcode = Opcode.raw(.store),
         .imm_04_00 = 0x0,
         .funct3 = 0x3,
         .rs1 = rs1,
@@ -339,7 +341,7 @@ inline fn decompress_nop_addi(compressed_instruction: u16) u32 {
     const rd: u5 = @truncate(compressed_instruction >> 7);
 
     var instruction: Instruction.IFields = .{
-        .opcode = 0x13,
+        .opcode = Opcode.raw(.op_imm),
         .rd = rd,
         .funct3 = 0x0,
         .rs1 = rd,
@@ -372,7 +374,7 @@ inline fn decompress_addiw(compressed_instruction: u16) u32 {
     if (rd == 0) return ILLEGAL_INSTRUCTION;
 
     var instruction: Instruction.IFields = .{
-        .opcode = 0x1B,
+        .opcode = Opcode.raw(.op_imm_32),
         .rd = rd,
         .funct3 = 0x0,
         .rs1 = rd,
@@ -404,7 +406,7 @@ inline fn decompress_li(compressed_instruction: u16) u32 {
     const rd: u5 = @truncate(compressed_instruction >> 7);
 
     var instruction: Instruction.IFields = .{
-        .opcode = 0x13,
+        .opcode = Opcode.raw(.op_imm),
         .rd = rd,
         .funct3 = 0x0,
         .rs1 = 0x0,
@@ -444,7 +446,7 @@ inline fn decompress_addi16sp_lui(compressed_instruction: u16) u32 {
 
     if (rd == 2) { // c.addi16sp
         var instruction: Instruction.IFields = .{
-            .opcode = 0x13,
+            .opcode = Opcode.raw(.op_imm),
             .rd = rd,
             .funct3 = 0x0,
             .rs1 = rd,
@@ -477,7 +479,7 @@ inline fn decompress_addi16sp_lui(compressed_instruction: u16) u32 {
             @as(u18, imm_16_12) << 12;
 
         var instruction: Instruction.UFields = .{
-            .opcode = 0x37,
+            .opcode = Opcode.raw(.lui),
             .rd = rd,
             .imm_31_12 = 0x0,
         };
@@ -559,7 +561,7 @@ inline fn decompress_alu(compressed_instruction: u16) u32 {
     switch (alu) {
         .srli => {
             const instruction: Instruction.ShiftIFields = .{
-                .opcode = 0x13,
+                .opcode = Opcode.raw(.op_imm),
                 .rd = rd,
                 .funct3 = 0x5,
                 .rs1 = rd,
@@ -571,7 +573,7 @@ inline fn decompress_alu(compressed_instruction: u16) u32 {
         },
         .srai => {
             const instruction: Instruction.ShiftIFields = .{
-                .opcode = 0x13,
+                .opcode = Opcode.raw(.op_imm),
                 .rd = rd,
                 .funct3 = 0x5,
                 .rs1 = rd,
@@ -583,7 +585,7 @@ inline fn decompress_alu(compressed_instruction: u16) u32 {
         },
         .andi => {
             var instruction: Instruction.IFields = .{
-                .opcode = 0x13,
+                .opcode = Opcode.raw(.op_imm),
                 .rd = rd,
                 .funct3 = 0x7,
                 .rs1 = rd,
@@ -604,7 +606,7 @@ inline fn decompress_alu(compressed_instruction: u16) u32 {
             const rs2 = decompress_register(@truncate(imm_04_00));
 
             var instruction: Instruction.RFields = .{
-                .opcode = 0x33,
+                .opcode = Opcode.raw(.op),
                 .rd = rd,
                 .funct3 = 0x0,
                 .rs1 = rd,
@@ -619,10 +621,10 @@ inline fn decompress_alu(compressed_instruction: u16) u32 {
                 .@"and" => instruction.funct3 = 0x7,
 
                 .subw => {
-                    instruction.opcode = 0x3B;
+                    instruction.opcode = Opcode.raw(.op_32);
                     instruction.funct7 = 0x20;
                 },
-                .addw => instruction.opcode = 0x3B,
+                .addw => instruction.opcode = Opcode.raw(.op_32),
 
                 else => return ILLEGAL_INSTRUCTION,
             }
@@ -642,7 +644,7 @@ inline fn decompress_j(compressed_instruction: u16) u32 {
     assert(dispatch_key == .j);
 
     var instruction: Instruction.JFields = .{
-        .opcode = 0x6F,
+        .opcode = Opcode.raw(.jal),
         .rd = 0x0,
         .imm_10_01 = 0x0,
         .imm_11_11 = 0x0,
@@ -687,7 +689,7 @@ inline fn decompress_beqz(compressed_instruction: u16) u32 {
     const rs1 = decompress_register(@truncate(compressed_instruction >> 7));
 
     var instruction: Instruction.BFields = .{
-        .opcode = 0x63,
+        .opcode = Opcode.raw(.branch),
         .imm_11_11 = 0x0,
         .imm_04_01 = 0x0,
         .funct3 = 0x0,
@@ -728,7 +730,7 @@ inline fn decompress_bnez(compressed_instruction: u16) u32 {
     const rs1 = decompress_register(@truncate(compressed_instruction >> 7));
 
     var instruction: Instruction.BFields = .{
-        .opcode = 0x63,
+        .opcode = Opcode.raw(.branch),
         .imm_11_11 = 0x0,
         .imm_04_01 = 0x0,
         .funct3 = 0x1,
@@ -775,7 +777,7 @@ inline fn decompress_slli(compressed_instruction: u16) u32 {
         @as(u6, shamt_04_00);
 
     const instruction: Instruction.ShiftIFields = .{
-        .opcode = 0x13,
+        .opcode = Opcode.raw(.op_imm),
         .rd = rd,
         .funct3 = 0x1,
         .rs1 = rd,
@@ -798,7 +800,7 @@ inline fn decompress_fldsp(compressed_instruction: u16) u32 {
     const rd: u5 = @truncate(compressed_instruction >> 7);
 
     var instruction: Instruction.IFields = .{
-        .opcode = 0x7,
+        .opcode = Opcode.raw(.load_fp),
         .rd = rd,
         .funct3 = 0x3,
         .rs1 = 0x2,
@@ -831,7 +833,7 @@ inline fn decompress_lwsp(compressed_instruction: u16) u32 {
     if (rd == 0) return ILLEGAL_INSTRUCTION;
 
     var instruction: Instruction.IFields = .{
-        .opcode = 0x3,
+        .opcode = Opcode.raw(.load),
         .rd = rd,
         .funct3 = 0x2,
         .rs1 = 0x2,
@@ -864,7 +866,7 @@ inline fn decompress_ldsp(compressed_instruction: u16) u32 {
     if (rd == 0) return ILLEGAL_INSTRUCTION;
 
     var instruction: Instruction.IFields = .{
-        .opcode = 0x3,
+        .opcode = Opcode.raw(.load),
         .rd = rd,
         .funct3 = 0x3,
         .rs1 = 0x2,
@@ -922,7 +924,7 @@ inline fn decompress_system_jump_add(compressed_instruction: u16) u32 {
                 if (rd == 0) return ILLEGAL_INSTRUCTION;
 
                 const instruction: Instruction.IFields = .{
-                    .opcode = 0x67,
+                    .opcode = Opcode.raw(.jalr),
                     .rd = 0x0,
                     .funct3 = 0x0,
                     .rs1 = rd,
@@ -932,7 +934,7 @@ inline fn decompress_system_jump_add(compressed_instruction: u16) u32 {
                 return @bitCast(instruction);
             } else { // mv
                 const instruction: Instruction.RFields = .{
-                    .opcode = 0x33,
+                    .opcode = Opcode.raw(.op),
                     .rd = rd,
                     .funct3 = 0x0,
                     .rs1 = 0x0,
@@ -947,7 +949,7 @@ inline fn decompress_system_jump_add(compressed_instruction: u16) u32 {
             if (rs2 == 0) { // ebreak_jalr
                 if (rd == 0) { // ebreak
                     const instruction: Instruction.IFields = .{
-                        .opcode = 0x73,
+                        .opcode = Opcode.raw(.system),
                         .rd = 0x0,
                         .funct3 = 0x0,
                         .rs1 = 0x0,
@@ -961,7 +963,7 @@ inline fn decompress_system_jump_add(compressed_instruction: u16) u32 {
                     // not +4. The central dispatch must therefore use the compressed instruction
                     // length when advancing pc; do not treat this as an ordinary jalr.
                     const instruction: Instruction.IFields = .{
-                        .opcode = 0x67,
+                        .opcode = Opcode.raw(.jalr),
                         .rd = 0x1,
                         .funct3 = 0x0,
                         .rs1 = rd,
@@ -972,7 +974,7 @@ inline fn decompress_system_jump_add(compressed_instruction: u16) u32 {
                 }
             } else { // add
                 const instruction: Instruction.RFields = .{
-                    .opcode = 0x33,
+                    .opcode = Opcode.raw(.op),
                     .rd = rd,
                     .funct3 = 0x0,
                     .rs1 = rd,
@@ -998,7 +1000,7 @@ inline fn decompress_fsdsp(compressed_instruction: u16) u32 {
     const rs2: u5 = @truncate(compressed_instruction >> 2);
 
     var instruction: Instruction.SFields = .{
-        .opcode = 0x27,
+        .opcode = Opcode.raw(.store_fp),
         .imm_04_00 = 0x0,
         .funct3 = 0x3,
         .rs1 = 0x2,
@@ -1029,7 +1031,7 @@ inline fn decompress_swsp(compressed_instruction: u16) u32 {
     const rs2: u5 = @truncate(compressed_instruction >> 2);
 
     var instruction: Instruction.SFields = .{
-        .opcode = 0x23,
+        .opcode = Opcode.raw(.store),
         .imm_04_00 = 0x0,
         .funct3 = 0x2,
         .rs1 = 0x2,
@@ -1060,7 +1062,7 @@ inline fn decompress_sdsp(compressed_instruction: u16) u32 {
     const rs2: u5 = @truncate(compressed_instruction >> 2);
 
     var instruction: Instruction.SFields = .{
-        .opcode = 0x23,
+        .opcode = Opcode.raw(.store),
         .imm_04_00 = 0x0,
         .funct3 = 0x3,
         .rs1 = 0x2,
