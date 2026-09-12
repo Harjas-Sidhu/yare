@@ -44,7 +44,7 @@ pub const BasicBlock = struct {
 
     const Self = @This();
 
-    fn assertInvariants(basic_block: *const Self) void {
+    fn assert_invariants(basic_block: *const Self) void {
         assert(basic_block.instruction_count <= BLOCK_CAPACITY);
         assert(basic_block.handlers[basic_block.instruction_count] != exec_unreachable);
     }
@@ -62,11 +62,11 @@ pub const BasicBlock = struct {
         };
 
         basic_block.handlers[0] = sentinel_handler;
-        basic_block.assertInvariants();
+        basic_block.assert_invariants();
     }
 
     pub fn pc_offset(basic_block: *const Self, instruction_index: ShiftType) u64 {
-        basic_block.assertInvariants();
+        basic_block.assert_invariants();
         assert(instruction_index < basic_block.instruction_count);
 
         // Count full-width instructions among entries [0, count).
@@ -88,7 +88,7 @@ pub const BasicBlock = struct {
         handler: Handler,
         is_full_width: bool,
     ) void {
-        basic_block.assertInvariants();
+        basic_block.assert_invariants();
         assert(handler != exec_unreachable);
 
         const index = basic_block.instruction_count;
