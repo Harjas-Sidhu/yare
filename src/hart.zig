@@ -1,4 +1,6 @@
 const std = @import("std");
+const Region = @import("region.zig");
+
 const assert = std.debug.assert;
 
 comptime {
@@ -11,13 +13,20 @@ comptime {
 pc: u64,
 regs: [32]u64,
 dram: []u8,
+dram_region: Region,
 
 const Self = @This();
 
 /// Clears the provided DRAM buffer.
-pub fn init(hart: *Self, pc_initial: u64, dram: []u8) void {
+pub fn init(
+    hart: *Self,
+    pc_initial: u64,
+    dram: []u8,
+    dram_region: Region,
+) void {
     // must be large enough for the widest dram access (u64).
     assert(dram.len >= @sizeOf(u64));
+    assert(dram.len == dram_region.size);
 
     // Zero DRAM so the initial state is deterministic.
     @memset(dram, 0);
@@ -26,6 +35,7 @@ pub fn init(hart: *Self, pc_initial: u64, dram: []u8) void {
         .pc = pc_initial,
         .regs = [_]u64{0} ** 32,
         .dram = dram,
+        .dram_region = dram_region,
     };
 }
 
@@ -81,9 +91,10 @@ const PC_INITIAL = 0x8000_0000;
 
 test "Hart.init: zeroes registers and dram, sets pc" {
     var dram: [8]u8 = .{0xFF} ** 8;
+    const dram_region: Region = .init(PC_INITIAL, dram.len);
 
     var hart: Self = undefined;
-    hart.init(PC_INITIAL, &dram);
+    hart.init(PC_INITIAL, &dram, dram_region);
 
     for (hart.regs) |reg| try expectEqual(0, reg);
     for (hart.dram) |byte| try expectEqual(0, byte);
@@ -93,9 +104,10 @@ test "Hart.init: zeroes registers and dram, sets pc" {
 
 test "Hart: store_reg/load_reg round-trip, x0 hardwired to zero" {
     var dram: [8]u8 = .{0xFF} ** 8;
+    const dram_region: Region = .init(PC_INITIAL, dram.len);
 
     var hart: Self = undefined;
-    hart.init(PC_INITIAL, &dram);
+    hart.init(PC_INITIAL, &dram, dram_region);
 
     for (0..hart.regs.len) |index| {
         const idx: u5 = @truncate(index);
@@ -117,9 +129,10 @@ test "Hart: store_reg/load_reg round-trip, x0 hardwired to zero" {
 
 test "Hart: x0 remains zero under randomized repeated writes" {
     var dram: [8]u8 = .{0xFF} ** 8;
+    const dram_region: Region = .init(PC_INITIAL, dram.len);
 
     var hart: Self = undefined;
-    hart.init(PC_INITIAL, &dram);
+    hart.init(PC_INITIAL, &dram, dram_region);
 
     var prng = std.Random.DefaultPrng.init(0xDEADBEEF);
     const random = prng.random();
@@ -134,9 +147,10 @@ test "Hart: x0 remains zero under randomized repeated writes" {
 
 test "Hart: store_reg/load_reg boundary values (0, max, mid)" {
     var dram: [8]u8 = .{0xFF} ** 8;
+    const dram_region: Region = .init(PC_INITIAL, dram.len);
 
     var hart: Self = undefined;
-    hart.init(PC_INITIAL, &dram);
+    hart.init(PC_INITIAL, &dram, dram_region);
 
     const MAX: u64 = std.math.maxInt(u64);
     const MID: u64 = MAX >> 1;
@@ -158,9 +172,10 @@ test "Hart: store_reg/load_reg boundary values (0, max, mid)" {
 
 test "Hart: store_reg to an index doesn't clobber other indices" {
     var dram: [8]u8 = .{0xFF} ** 8;
+    const dram_region: Region = .init(PC_INITIAL, dram.len);
 
     var hart: Self = undefined;
-    hart.init(PC_INITIAL, &dram);
+    hart.init(PC_INITIAL, &dram, dram_region);
 
     for (1..hart.regs.len) |index| {
         const idx: u5 = @truncate(index);
@@ -179,9 +194,10 @@ test "Hart: store_reg to an index doesn't clobber other indices" {
 
 test "Hart.init: zeroes dram for all sizes before any access" {
     var dram: [16]u8 = .{0xFF} ** 16;
+    const dram_region: Region = .init(PC_INITIAL, dram.len);
 
     var hart: Self = undefined;
-    hart.init(PC_INITIAL, &dram);
+    hart.init(PC_INITIAL, &dram, dram_region);
 
     const types: [4]type = .{ u8, u16, u32, u64 };
 
@@ -200,9 +216,10 @@ test "Hart.init: zeroes dram for all sizes before any access" {
 
 test "Hart: store_dram/load_dram round-trip for each type" {
     var dram: [64]u8 = .{0xFF} ** 64;
+    const dram_region: Region = .init(PC_INITIAL, dram.len);
 
     var hart: Self = undefined;
-    hart.init(PC_INITIAL, &dram);
+    hart.init(PC_INITIAL, &dram, dram_region);
 
     const value: u64 = 0xCAFEBABE_DEADBEEF;
     const types: [4]type = .{ u8, u16, u32, u64 };
@@ -217,9 +234,10 @@ test "Hart: store_dram/load_dram round-trip for each type" {
 
 test "Hart: load_dram reads correct value through each width after a single u64 store" {
     var dram: [8]u8 = .{0xFF} ** 8;
+    const dram_region: Region = .init(PC_INITIAL, dram.len);
 
     var hart: Self = undefined;
-    hart.init(PC_INITIAL, &dram);
+    hart.init(PC_INITIAL, &dram, dram_region);
 
     const max: u64 = std.math.maxInt(u64);
     hart.store_dram(u64, 0, max);
@@ -235,9 +253,10 @@ test "Hart: load_dram reads correct value through each width after a single u64 
 
 test "Hart: store_dram/load_dram at exact upper bound offset for each type" {
     var dram: [16]u8 = .{0xFF} ** 16;
+    const dram_region: Region = .init(PC_INITIAL, dram.len);
 
     var hart: Self = undefined;
-    hart.init(PC_INITIAL, &dram);
+    hart.init(PC_INITIAL, &dram, dram_region);
 
     const types: [4]type = .{ u8, u16, u32, u64 };
     const value: u64 = 0x11223344_55667788;
@@ -253,9 +272,10 @@ test "Hart: store_dram/load_dram at exact upper bound offset for each type" {
 
 test "Hart: store_dram/load_dram is little-endian" {
     var dram: [8]u8 = .{0xFF} ** 8;
+    const dram_region: Region = .init(PC_INITIAL, dram.len);
 
     var hart: Self = undefined;
-    hart.init(PC_INITIAL, &dram);
+    hart.init(PC_INITIAL, &dram, dram_region);
 
     const value: u64 = 0xCAFEBABE_DEADBEEF;
     hart.store_dram(u64, 0, value);
@@ -282,9 +302,10 @@ test "Hart: store_dram/load_dram is little-endian" {
 
 test "Hart: store_dram does not affect bytes outside the written range" {
     var dram: [8]u8 = .{0xFF} ** 8;
+    const dram_region: Region = .init(PC_INITIAL, dram.len);
 
     var hart: Self = undefined;
-    hart.init(PC_INITIAL, &dram);
+    hart.init(PC_INITIAL, &dram, dram_region);
 
     // resulting byte layout (little-endian):
     // [0]=00 [1]=00 [2]=CE [3]=FA [4]=AD [5]=DE [6]=FE [7]=CA
@@ -314,9 +335,10 @@ test "Hart: store_dram does not affect bytes outside the written range" {
 
 test "Hart: overlapping dram stores and loads" {
     var dram: [8]u8 = .{0xFF} ** 8;
+    const dram_region: Region = .init(PC_INITIAL, dram.len);
 
     var hart: Self = undefined;
-    hart.init(PC_INITIAL, &dram);
+    hart.init(PC_INITIAL, &dram, dram_region);
 
     hart.store_dram(u64, 0, 0xCAFEBEEF_DEADFACE);
     hart.store_dram(u16, 3, 0xAD_BE);
@@ -334,9 +356,10 @@ test "Hart: overlapping dram stores and loads" {
 
 test "Hart: unaligned dram loads and stores" {
     var dram: [64]u8 = .{0xFF} ** 64;
+    const dram_region: Region = .init(PC_INITIAL, dram.len);
 
     var hart: Self = undefined;
-    hart.init(PC_INITIAL, &dram);
+    hart.init(PC_INITIAL, &dram, dram_region);
 
     const types: [4]type = .{ u8, u16, u32, u64 };
 
@@ -360,9 +383,10 @@ test "Hart: unaligned dram loads and stores" {
 
 test "Hart: randomized stores and loads for dram" {
     var dram: [128]u8 = .{0xFF} ** 128;
+    const dram_region: Region = .init(PC_INITIAL, dram.len);
 
     var hart: Self = undefined;
-    hart.init(PC_INITIAL, &dram);
+    hart.init(PC_INITIAL, &dram, dram_region);
 
     const types: [4]type = .{ u8, u16, u32, u64 };
 
