@@ -89,6 +89,7 @@ pub const BasicBlock = struct {
         is_full_width: bool,
     ) void {
         basic_block.assert_invariants();
+        assert(basic_block.instruction_count < BLOCK_CAPACITY);
         assert(handler != exec_unreachable);
 
         const index = basic_block.instruction_count;
