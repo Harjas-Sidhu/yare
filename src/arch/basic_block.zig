@@ -18,7 +18,18 @@ const COMPRESSED_INSTRUCTION_BYTES: u8 = 2;
 
 const MaskType = @Int(.unsigned, BLOCK_CAPACITY);
 const ShiftType = std.math.IntFittingRange(0, BLOCK_CAPACITY - 1);
-const SizeType = std.math.IntFittingRange(0, BLOCK_CAPACITY);
+pub const SizeType = std.math.IntFittingRange(0, BLOCK_CAPACITY);
+
+/// Special default block. Never to be executed. Every handler is unreachable.
+/// Does not satisfy normal BasicBlock execution invariants.
+pub const UNREACHABLE_BLOCK: BasicBlock = .{
+    .pc_entry = 0,
+    .pc_exit = 0,
+    .instruction_length_mask = 0,
+    .instruction_count = 0,
+    .instructions = .{ILLEGAL_INSTRUCTION} ** (BLOCK_CAPACITY + 1),
+    .handlers = .{exec_unreachable} ** (BLOCK_CAPACITY + 1),
+};
 
 pub const BasicBlock = struct {
     pc_entry: u64,

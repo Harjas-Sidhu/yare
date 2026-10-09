@@ -1,7 +1,11 @@
 const std = @import("std");
+const block = @import("arch/basic_block.zig");
 const Region = @import("region.zig");
 
 const assert = std.debug.assert;
+const BasicBlock = block.BasicBlock;
+const BlockIndexType = block.SizeType;
+const UNREACHABLE_BLOCK = block.UNREACHABLE_BLOCK;
 
 comptime {
     assert(@sizeOf(u64) == 8);
@@ -14,6 +18,8 @@ pc: u64,
 regs: [32]u64,
 dram: []u8,
 dram_region: Region,
+basic_block: *const BasicBlock,
+block_index: BlockIndexType,
 
 const Self = @This();
 
@@ -36,6 +42,8 @@ pub fn init(
         .regs = [_]u64{0} ** 32,
         .dram = dram,
         .dram_region = dram_region,
+        .basic_block = &UNREACHABLE_BLOCK,
+        .block_index = 0,
     };
 }
 
@@ -100,6 +108,9 @@ test "Hart.init: zeroes registers and dram, sets pc" {
     for (hart.dram) |byte| try expectEqual(0, byte);
 
     try expectEqual(PC_INITIAL, hart.pc);
+
+    try std.testing.expect(hart.basic_block == &UNREACHABLE_BLOCK);
+    try expectEqual(@as(BlockIndexType, 0), hart.block_index);
 }
 
 test "Hart: store_reg/load_reg round-trip, x0 hardwired to zero" {
